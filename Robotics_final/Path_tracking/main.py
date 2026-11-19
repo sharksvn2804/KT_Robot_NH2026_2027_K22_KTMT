@@ -22,7 +22,7 @@ from datetime import datetime
 import json
 import math
 from pathlib import Path
-
+import os
 import numpy as np
 
 from parameters import DEFAULT_ROUTE, MODE_LABELS, ROUTES, Parameters
@@ -454,7 +454,10 @@ class App:
             if not all(sim.reason for sim in self.pair):
                 self.compare_after = self.root.after(10,self.comparison_tick)
                 return
-            folder = Path.cwd()/('pp_comparison_'+datetime.now().strftime('%Y%m%d_%H%M%S_%f'))
+            
+            os.makedirs("results",exist_ok=True)
+            
+            folder = Path.cwd()/('results/pp_comparison_'+datetime.now().strftime('%Y%m%d_%H%M%S_%f'))
             figs,report = save_comparison(*self.pair,self.comparison_mode,folder)
             for title,fig in zip(['1 - Pure Pursuit goc (baseline chuan hoa)',
                                   '2 - Pure Pursuit moi', '3 - Do thi chenh lech'],figs):
