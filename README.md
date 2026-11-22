@@ -1,228 +1,92 @@
-# MÔ PHỎNG ROBOT BÁM QUỸ ĐẠO SỬ DỤNG PURE PURSUIT
+ỨNG DỤNG THUẬT TOÁN PURE PURSUIT TRONG ĐIỀU KHIỂN ROBOT VẬN CHUYỂN HÀNG HÓA TRONG NHÀ MÁY VÀ KHO THÔNG MINH
+Đồ án môn học Kỹ thuật Robot · Python · Pure Pursuit · P/PID · Mô phỏng bám quỹ đạo
+<p align="center">
+  <img src="Robotics_final/Path_tracking/results/zigzag/01_quy_dao_3_doi_tuong.png" alt="So sánh quỹ đạo robot trên đường zíc zắc" width="850" />
+</p>1. Nội dung đề tài
+Đề tài xây dựng chương trình mô phỏng robot vận chuyển hàng hóa bám theo quỹ đạo định trước trong môi trường nhà máy và kho thông minh. Mô hình Bicycle mô tả chuyển động của xe; Pure Pursuit tính góc lái; P/PID điều chỉnh vận tốc. Một cấu hình còn bổ sung giảm tốc theo độ cong để khảo sát ảnh hưởng của tốc độ khi vào cua.
 
-## 1. Giới thiệu
+Ba cấu hình được so sánh:
+Đối tượng	Điều khiển hướng	Điều khiển vận tốc
+1 – PP + P	Pure Pursuit	P
+2 – PP + PID	Pure Pursuit	PID
+3 – PP + PID + giảm tốc cua	Pure Pursuit	PID, có điều chỉnh vận tốc đặt theo độ cong
 
-Chương trình mô phỏng robot bám quỹ đạo trong môi trường hành lang, sử dụng thuật toán **Pure Pursuit** để tính góc lái, kết hợp bộ điều khiển **P/PID** để điều chỉnh vận tốc.
 
-Chương trình thực hiện so sánh 3 cấu hình điều khiển:
+Ba kịch bản thí nghiệm:
+Kịch bản	Quỹ đạo	Nội dung khảo sát
+1	Đường thẳng (0 cua)	Tăng tốc, duy trì vận tốc và dừng tại đích
+2	Chữ L (1 cua 90°)	Sai số bám đường và biến thiên vận tốc khi vào cua
+3	Zíc zắc (5 cua 90°)	Khả năng bám đường qua các cua liên tiếp và kiểm tra vượt biên
 
-- **Đối tượng 1:** Pure Pursuit + P.
-- **Đối tượng 2:** Pure Pursuit + PID.
-- **Đối tượng 3:** Pure Pursuit + PID kết hợp giảm tốc theo độ cong.
 
-Các bộ điều khiển được đánh giá trên 3 kịch bản: đường thẳng, chữ L (1 cua 90°) và zíc zắc (5 cua 90°).
-
-Chương trình cung cấp giao diện mô phỏng, biểu đồ quỹ đạo, vận tốc, sai số bám đường và kết quả đánh giá định lượng.
-
-## 2. Cấu trúc thư mục
-
-```text
-Robotics_final/
-├── README.md
-└── Path_tracking/
-    ├── main.py
-    ├── experiment.py
-    ├── parameters.py
-    ├── pure_pursuit.py
-    ├── pid.py
-    ├── trajectory.py
-    ├── utils/
-    │   ├── __init__.py
-    │   └── angle.py
-    └── results/
-        ├── straight/
-        ├── elbow/
-        ├── zigzag/
-        └── tong_hop_9_luot_chay.csv
-```
-
-| File | Chức năng |
-|---|---|
-| `main.py` | Khởi động giao diện, mô phỏng và điều phối chạy chương trình |
-| `experiment.py` | Chạy thí nghiệm 3 đối tượng, xuất biểu đồ, GIF và CSV |
-| `parameters.py` | Khai báo các thông số robot, bộ điều khiển và quỹ đạo |
-| `pure_pursuit.py` | Chọn điểm nhìn trước và tính góc lái |
-| `pid.py` | Điều khiển vận tốc P/PID và điều chỉnh tốc độ theo độ cong |
-| `trajectory.py` | Tạo quỹ đạo, kiểm tra hành lang và hỗ trợ vẽ kết quả |
-| `utils/angle.py` | Các hàm tiện ích xử lý góc |
-
-## 3. Cài đặt môi trường
-
-**Yêu cầu:** Python 3.9 trở lên, hỗ trợ Windows hoặc Linux.
-
-Mở Terminal trong thư mục `Robotics_final`, sau đó chuyển đến thư mục mã nguồn:
-
-```bash
-cd Path_tracking
-```
-
-Cài đặt các thư viện cần thiết:
-
-```bash
+Các cấu hình sử dụng cùng hình học xe, quỹ đạo và giới hạn mô phỏng. Các chỉ tiêu được xuất gồm RMS(t), RMS(ds), RMS(s) trên miền tiến độ tuyến chung, sai số lớn nhất, thời gian, khoảng cách đích, vận tốc cuối và tình trạng vượt biên hành lang.
+2. Hướng dẫn cài đặt và chạy
+Yêu cầu Python 3.9 trở lên. Mở terminal tại thư mục gốc của repository và chạy:
+cd Robotics_final/Path_tracking
 python -m pip install numpy matplotlib pillow
-```
-
-Các thư viện có chức năng:
-
-- `numpy`: Xử lý dữ liệu và tính toán số học.
-- `matplotlib`: Vẽ quỹ đạo và các biểu đồ.
-- `pillow`: Tạo ảnh động GIF.
-
-Giao diện sử dụng Tkinter. Trên Windows, Tkinter thường đi kèm bản cài đặt Python thông thường.
-
-## 4. Hướng dẫn chạy chương trình
-
-### 4.1. Chạy giao diện mô phỏng
-
-Trong thư mục `Path_tracking`, thực hiện:
-
-```bash
+Mở giao diện mô phỏng:
 python main.py
-```
-
-Sau khi khởi động, giao diện cho phép:
-
-- Lựa chọn quỹ đạo mô phỏng.
-- Thay đổi các tham số robot và bộ điều khiển.
-- Quan sát chuyển động của robot.
-- Theo dõi vận tốc và sai số bám đường.
-- Xuất dữ liệu kết quả mô phỏng.
-
-### 4.2. Chạy toàn bộ 9 lượt thí nghiệm
-
-Để tự động chạy cả 3 đối tượng trên 3 kịch bản, sử dụng:
-
-```bash
+Chạy tự động toàn bộ 9 lượt mô phỏng (3 cấu hình × 3 kịch bản), xuất GIF, PNG, CSV:
 python main.py --experiment-all
-```
-
-Chương trình lần lượt thực hiện:
-
-1. Kịch bản đường thẳng.
-2. Kịch bản chữ L (1 cua 90°).
-3. Kịch bản zíc zắc (5 cua 90°).
-
-Mỗi kịch bản chạy 3 bộ điều khiển với cùng điều kiện mô phỏng để phục vụ việc đối chiếu.
-
-Khi hoàn tất, Terminal hiển thị:
-
-```text
-Đang chạy kịch bản: Đường thẳng
-Đang chạy kịch bản: Chữ L · 1 cua
-Đang chạy kịch bản: Zíc zắc · 5 cua
-Hoàn tất. Kết quả: .../Path_tracking/results
-Đã lưu kết quả trong thư mục results/
-```
-
-### 4.3. Kiểm tra chương trình
-
-Chạy các bài kiểm thử có sẵn:
-
-```bash
+Kiểm tra các chức năng mô phỏng:
 python main.py --self-test
-```
+Kết quả được lưu trong Robotics_final/Path_tracking/results/, chia thành straight/, elbow/, zigzag/ và bảng tổng hợp tong_hop_9_luot_chay.csv.
+3. Kết quả mô phỏng trực quan
+Kịch bản 1 – Đường thẳng
+PP + P	PP + PID	PP + PID + giảm tốc cua
+		
 
-Lệnh này dùng để kiểm tra một số chức năng mô phỏng và so sánh mà không cần mở giao diện.
 
-## 5. Kết quả mô phỏng
+Quỹ đạo thực tế của ba đối tượng
 
-Sau khi thực hiện lệnh `python main.py --experiment-all`, chương trình lưu kết quả vào thư mục `results/`.
+<details>
+<summary><b>Xem thêm: Sai số, vận tốc và chỉ tiêu đánh giá – Đường thẳng</b></summary>
+</details>Kịch bản 2 – Chữ L (1 cua 90°)
+PP + P	PP + PID	PP + PID + giảm tốc cua
+		
 
-Mỗi kịch bản có thư mục riêng:
 
-- `straight/`: Đường thẳng.
-- `elbow/`: Chữ L.
-- `zigzag/`: Zíc zắc.
+Quỹ đạo thực tế của ba đối tượng
 
-Cấu trúc kết quả của mỗi kịch bản:
+Đồ thị sai số bám đường và vận tốc
 
-```text
-results/
-└── elbow/
-    ├── pp_p.gif
-    ├── pp_pid.gif
-    ├── pp_pid_curve.gif
-    ├── 01_quy_dao_3_doi_tuong.png
-    ├── 02_sai_so_va_van_toc.png
-    ├── 03_bang_chi_tieu.png
-    ├── pp_p.csv
-    ├── pp_pid.csv
-    ├── pp_pid_curve.csv
-    ├── chi_tieu_danh_gia.csv
-    ├── doi_chieu_theo_tien_do_s.csv
-    ├── tham_so.json
-    └── bao_cao.txt
-```
+<details>
+<summary><b>Xem thêm: Chỉ tiêu đánh giá – Chữ L</b></summary>
+</details>Kịch bản 3 – Zíc zắc (5 cua 90°)
+PP + P	PP + PID	PP + PID + giảm tốc cua
+		
 
-### 5.1. Ảnh động GIF
 
-| File | Nội dung |
-|---|---|
-| `pp_p.gif` | Robot sử dụng Pure Pursuit + P |
-| `pp_pid.gif` | Robot sử dụng Pure Pursuit + PID |
-| `pp_pid_curve.gif` | Robot sử dụng Pure Pursuit + PID và giảm tốc theo độ cong |
+Quỹ đạo thực tế của ba đối tượng
 
-Các ảnh GIF thể hiện chuyển động của từng đối tượng trên cùng quỹ đạo tham chiếu.
+Đồ thị sai số bám đường và vận tốc
 
-### 5.2. Biểu đồ kết quả PNG
+Bảng chỉ tiêu định lượng
 
-| File | Nội dung |
-|---|---|
-| `01_quy_dao_3_doi_tuong.png` | So sánh quỹ đạo di chuyển thực tế của 3 đối tượng |
-| `02_sai_so_va_van_toc.png` | So sánh sai số bám đường và vận tốc |
-| `03_bang_chi_tieu.png` | Biểu diễn các chỉ tiêu đánh giá định lượng |
+Tổng hợp kết quả
+📊 [Xem bảng tổng hợp 9 lượt chạy (CSV)](Robotics_final/Path_tracking/results/tong_hop_9_luot_chay.csv)
 
-### 5.3. Dữ liệu CSV và báo cáo
+Kết quả được dùng để phân tích sự đánh đổi giữa độ chính xác bám đường, thời gian di chuyển và an toàn hành lang. Việc bổ sung giảm tốc theo độ cong không mặc nhiên bảo đảm sai số nhỏ hơn ở mọi kịch bản; kết luận cần dựa trên các chỉ tiêu đo được.
+4. Mã nguồn chính
+File	Chức năng
+main.py	Giao diện, điều phối mô phỏng và chạy kiểm thử
+experiment.py	Chạy 9 thí nghiệm; xuất GIF, đồ thị, CSV và báo cáo
+parameters.py	Thông số mô phỏng và các quỹ đạo
+pure_pursuit.py	Chọn điểm mục tiêu và tính góc lái
+pid.py	Bộ điều khiển vận tốc P/PID, giảm tốc theo độ cong
+trajectory.py	Tạo đường tham chiếu, đánh giá hành lang và vẽ quỹ đạo
 
-- `pp_p.csv`, `pp_pid.csv`, `pp_pid_curve.csv`: Dữ liệu trạng thái và chuyển động của từng đối tượng.
-- `chi_tieu_danh_gia.csv`: Bảng chỉ tiêu đánh giá của 3 đối tượng.
-- `doi_chieu_theo_tien_do_s.csv`: Đối chiếu kết quả theo cùng tiến độ tuyến tham chiếu.
-- `tham_so.json`: Lưu cấu hình tham số mô phỏng.
-- `bao_cao.txt`: Báo cáo kết quả bằng văn bản.
-- `tong_hop_9_luot_chay.csv`: Bảng tổng hợp toàn bộ 9 lượt thí nghiệm.
 
-## 6. Các chỉ tiêu đánh giá
+Thư mục mã nguồn: [Robotics_final/Path_tracking](Robotics_final/Path_tracking/)
+5. Tài liệu tham khảo
+[1] R. C. Coulter, Implementation of the Pure Pursuit Path Tracking Algorithm, Carnegie Mellon University, Robotics Institute, 1992.
 
-Chương trình sử dụng các chỉ tiêu sau để đánh giá và so sánh hiệu quả điều khiển:
+[2] S. Macenski, S. Singh, F. Martin, and J. Gines, “Regulated Pure Pursuit for Robot Path Tracking,” Autonomous Robots, 2023. https://arxiv.org/abs/2305.20026
 
-| Chỉ tiêu | Ý nghĩa |
-|---|---|
-| RMS(t) | Sai số bám đường theo thời gian |
-| RMS(ds) | Sai số bám đường theo quãng đường xe di chuyển |
-| RMS(s) | Sai số trên cùng miền tiến độ tuyến tham chiếu |
-| e_max | Sai số bám đường lớn nhất |
-| Thời gian | Thời gian kết thúc mô phỏng |
-| Khoảng cách đích | Khoảng cách còn lại tới điểm đích |
-| Vận tốc cuối | Vận tốc robot khi kết thúc |
-| Vượt biên | Kiểm tra thân xe có vượt khỏi hành lang hay không |
+[3] P. Corke, W. Jachimczyk, and R. Pillat, Robotics, Vision and Control: Fundamental Algorithms in MATLAB, Springer Tracts in Advanced Robotics, vol. 147, Springer, 2023.
 
-Việc đối chiếu theo tiến độ tuyến `s` giúp so sánh các bộ điều khiển tại những vị trí tương ứng trên đường tham chiếu, đặc biệt khi các đối tượng di chuyển với vận tốc khác nhau.
+[4] L. Liu, M. Xue, N. Guo, Z. Wang, Y. Wang, and Q. Tang, “Investigating the path tracking algorithm based on BP neural network,” Sensors, vol. 23, no. 9, Art. no. 4533, 2023.
 
-## 7. Thông số mô phỏng mặc định
+[5] K. J. Åström and R. M. Murray, Feedback Systems: An Introduction for Scientists and Engineers, 2nd ed., Princeton University Press, 2021, ch. 11.
 
-| Thông số | Giá trị |
-|---|---|
-| Chiều dài cơ sở xe | 2,9 m |
-| Chiều rộng thân xe | 2,0 m |
-| Góc lái tối đa | 45° |
-| Vận tốc hành trình | 1,0 m/s |
-| Khoảng nhìn trước cơ sở | 2,5 m |
-| Hệ số nhìn trước | 0,1 s |
-| Chiều rộng hành lang | 8,0 m |
-| Chiều dài mỗi đoạn đường | 12,0 m |
-| Bước thời gian mô phỏng | 0,05 s |
-| Thời gian mô phỏng tối đa | 240 s |
-
-Các tham số có thể được thay đổi trong giao diện hoặc tại file `parameters.py`.
-
-## 8. Lưu ý
-
-- Chạy các lệnh trong thư mục `Path_tracking`, nơi chứa `main.py`.
-- Kết quả được lưu trong thư mục `results/`.
-- Các ảnh GIF có thể mở trực tiếp bằng trình duyệt hoặc trình xem ảnh hỗ trợ GIF.
-- Thông số mô phỏng có thể ảnh hưởng đến sai số, thời gian hoàn thành và khả năng vượt biên.
-- Phần giảm tốc theo độ cong là cơ chế mở rộng của Pure Pursuit, chưa bao gồm đầy đủ tất cả chức năng của Regulated Pure Pursuit trong ROS 2 Navigation2.
-
----
-
-**Mục đích dự án:** Mô phỏng, phân tích và đánh giá khả năng bám quỹ đạo của robot khi sử dụng thuật toán Pure Pursuit kết hợp các phương pháp điều khiển vận tốc khác nhau.
+[6] MathWorks, “Discrete PID Controller,” Simulink Documentation. https://www.mathworks.com/help/simulink/slref/discretepidcontroller.html (truy cập ngày 20/11/2026).
