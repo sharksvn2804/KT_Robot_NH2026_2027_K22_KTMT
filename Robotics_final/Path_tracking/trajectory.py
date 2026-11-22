@@ -17,7 +17,6 @@ def create_course(leg_length=12.0, step=0.1, route=DEFAULT_ROUTE):
     path = np.concatenate(pieces)
     return path[:, 0], path[:, 1], vertices
 
-
 def body_polygon(state, p):
     # 0.5 m nho ra moi dau; chieu dai than = WB+1.0.
     local = np.array([[-0.5, -p.vehicle_width/2],
@@ -26,7 +25,6 @@ def body_polygon(state, p):
                       [-0.5, p.vehicle_width/2]])
     c, s = math.cos(state.yaw), math.sin(state.yaw)
     return local @ np.array([[c, s], [-s, c]]) + [state.x, state.y]
-
 
 def clip_to_rectangle(poly, rect):
     """Sutherland-Hodgman: giao polygon loi voi hinh chu nhat."""

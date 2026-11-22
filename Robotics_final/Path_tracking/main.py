@@ -107,7 +107,7 @@ class Simulation:
         # Chi dung o cuoi tuyen khi xe da tien den doan cuoi.
         # Giam toc P theo khoang cach, tach biet voi quy luat giam toc theo cua.
         if self.course.nearest >= len(self.course.path)-int(p.leg_length/0.1)-2:
-            self.ref = min(self.ref, 0.25*distance)
+            self.ref = min(self.ref, p.goal_slowdown_gain*distance)
             if distance <= 0.10:
                 self.ref = 0.0
         a = self.speed_pid.update(self.ref, s.v, p)
@@ -281,12 +281,24 @@ class App:
                   ('corridor_width','Rong hanh lang [m]'),('leg_length','Dai moi doan [m]'),
                   ('WB','Chieu dai co so [m]'),('vehicle_width','Rong than xe [m]'),
                   ('max_steer_deg','Goc lai toi da [do]'),('dt','Buoc thoi gian [s]'),
-                  ('max_time','Thoi gian toi da [s]')]
+                  ('max_time','Thời gian tối đa [s]'), ('goal_slowdown_gain','Hệ số giảm tốc gần đích [1/s]')]
         defaults = Parameters()
-        for i,(key,label) in enumerate(labels):
-            ttk.Label(grid,text=label).grid(row=i,column=0,sticky='w',pady=2)
-            var = tk.StringVar(value=str(getattr(defaults,key)))
-            ttk.Entry(grid,textvariable=var,width=10).grid(row=i,column=1,sticky='e',padx=(8,0))
+        groups = [
+            ('PURE PURSUIT & ĐIỀU TỐC', {'Lfc','k','Kp','Ki','Kd'}),
+            ('VẬN TỐC & GIA TỐC', {'cruise_speed','min_speed','regulation_radius','max_accel','max_decel','goal_slowdown_gain'}),
+            ('HÌNH HỌC & MÔI TRƯỜNG', {'corridor_width','leg_length','WB','vehicle_width','max_steer_deg'}),
+            ('THỜI GIAN MÔ PHỎNG', {'dt','max_time'}),
+        ]
+        index = 0
+        for heading, names in groups:
+            ttk.Label(grid, text=heading, font=('Segoe UI',9,'bold')).grid(row=index,column=0,columnspan=2,sticky='w',pady=(10,3))
+            index += 1
+            for key,label in labels:
+                if key not in names: continue
+                ttk.Label(grid,text=label).grid(row=index,column=0,sticky='w',pady=2)
+                var = tk.StringVar(value=str(getattr(defaults,key)))
+                ttk.Entry(grid,textvariable=var,width=10).grid(row=index,column=1,sticky='e',padx=(8,0))
+                index += 1
             self.fields[key] = var
         self.curve = tk.BooleanVar(value=False)
         self.stop_hit = tk.BooleanVar(value=True)
@@ -296,7 +308,9 @@ class App:
         self.compare_mode = tk.StringVar(value=MODE_LABELS['current'])
         ttk.Combobox(panel,textvariable=self.compare_mode,values=list(MODE_LABELS.values()),
                      state='readonly',width=39).pack(fill='x')
-        ttk.Button(panel,text='Chay 2 ban va mo 3 hinh',command=self.compare).pack(fill='x',pady=4)
+        ttk.Button(panel,text='Chạy 2 bản đối chứng cũ',command=self.compare).pack(fill='x',pady=4)
+        ttk.Label(panel,text='THÍ NGHIỆM 3 ĐỐI TƯỢNG',font=('Segoe UI',10,'bold')).pack(anchor='w',pady=(10,2))
+        ttk.Button(panel,text='Xuất 3 đối tượng × 3 kịch bản (PNG, GIF, CSV)',command=self.run_experiments).pack(fill='x',pady=4)
         ttk.Label(panel,text='Baseline da chuan hoa cung mo hinh, tuyen,\ngioi han va dung dich. Khong phai file goc nguyen ban.',
                   wraplength=325,foreground='#475569').pack(anchor='w')
         controls = ttk.Frame(panel)
@@ -424,6 +438,24 @@ class App:
         for i,(p,m,reason,hit) in enumerate(self.history,1):
             text.insert('end',f'Lan {i}: {reason}\nThong so: {p}\nKet qua: {m}\nDa vuot bien: {hit}\n\n')
         text.configure(state='disabled')
+
+    def run_experiments(self):
+        """Chạy 9 lượt mô phỏng và xuất kết quả; có thể mất thời gian khi tạo GIF."""
+        from tkinter import messagebox
+        from experiment import run_all_experiments
+        if self.running or self.comparing:
+            self.pause()
+        try:
+            params = self.read_parameters()
+            folder = Path.cwd() / 'results'
+            self.root.config(cursor='watch')
+            self.root.update_idletasks()
+            run_all_experiments(params,folder)
+            messagebox.showinfo('Hoàn thành thí nghiệm',f'Đã xuất 9 lượt chạy vào thư mục:\n{folder.resolve()}')
+        except Exception as exc:
+            messagebox.showerror('Lỗi thí nghiệm',str(exc))
+        finally:
+            self.root.config(cursor='')
 
     def compare(self):
         from tkinter import messagebox
@@ -569,6 +601,7 @@ def comparison_self_test():
 def main():
     parser = argparse.ArgumentParser(description='Pure Pursuit v3: giao dien + 2 hinh rieng + chenh lech')
     parser.add_argument('--self-test',action='store_true')
+    parser.add_argument('--experiment-all',action='store_true',help='Chạy 3 đối tượng trên 3 kịch bản, xuất GIF/PNG/CSV')
     parser.add_argument('--preview',help='PNG preview for --self-test')
     parser.add_argument('--compare',action='store_true',help='Tinh va luu 3 hinh, khong can GUI')
     parser.add_argument('--mode',choices=list(MODE_LABELS),default='current')
@@ -579,12 +612,16 @@ def main():
     parser.add_argument('--ki', type=float, default=defaults.Ki, help='He so I khi chay --compare')
     parser.add_argument('--kd', type=float, default=defaults.Kd, help='He so D khi chay --compare')
     args = parser.parse_args()
-    if args.self_test or args.compare:
+    if args.self_test or args.compare or args.experiment_all:
         import matplotlib
         matplotlib.use('Agg')
     if args.self_test:
         self_test(args.preview)
         comparison_self_test()
+    elif args.experiment_all:
+        from experiment import run_all_experiments
+        run_all_experiments(Parameters(),Path('results'))
+        print('Đã lưu kết quả trong thư mục results/')
     elif args.compare:
         p = Parameters(Kp=args.kp, Ki=args.ki, Kd=args.kd,
                        curvature_speed=args.curvature_speed)

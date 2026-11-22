@@ -1,0 +1,34 @@
+﻿BÁO CÁO KỊCH BẢN: Chữ L · 1 cua
+
+Quy ước: 3 đối tượng có cùng quỹ đạo, pose đầu, hình học, giới hạn và công thức lái dùng khoảng cách thực d.
+RMS(t): trung bình mẫu theo thời gian; RMS(ds): RMS tích phân theo quãng đường xe thực đi;
+RMS(s): RMS nội suy tại các mốc tiến độ tham chiếu chung, KHÔNG phải RMS(ds).
+Nếu xe dừng sớm, phải xem miền s chung trước khi kết luận.
+
+Đối tượng 1 - PP + Kp:
+  RMS(t)=0.18472 m | RMS(ds)=0.21426 m | e_max=0.63170 m
+  Thời gian=31.10 s | Khoảng cách đích=0.0940 m | v cuối=0.0292 m/s
+  RMS(s) trên miền chung=0.24897 m | Vượt biên=False | Dat dich: cach <= 0.12 m, v <= 0.03 m/s
+
+Đối tượng 2 - PP + PID:
+  RMS(t)=0.16752 m | RMS(ds)=0.21378 m | e_max=0.63388 m
+  Thời gian=37.10 s | Khoảng cách đích=0.1198 m | v cuối=0.0170 m/s
+  RMS(s) trên miền chung=0.24876 m | Vượt biên=False | Dat dich: cach <= 0.12 m, v <= 0.03 m/s
+
+Đối tượng 3 - PP + PID + giảm tốc cua:
+  RMS(t)=0.19867 m | RMS(ds)=0.21060 m | e_max=0.63452 m
+  Thời gian=41.15 s | Khoảng cách đích=0.1196 m | v cuối=0.0169 m/s
+  RMS(s) trên miền chung=0.24790 m | Vượt biên=False | Dat dich: cach <= 0.12 m, v <= 0.03 m/s
+
+Miền s chung: 0.000–23.880 m
+
+Các nhóm tham số:
+  Hình học xe: WB=2.9, vehicle_width=2.0, max_steer_deg=45.0
+  Môi trường: corridor_width=8.0, leg_length=12.0, stop_on_collision=True
+  Pure Pursuit: Lfc=2.5, k=0.1
+  Điều tốc P/PID: max_accel=1.0, max_decel=1.5
+  Giảm tốc cua: regulation_radius=8.0, min_speed=0.5
+  Giảm tốc về đích: goal_slowdown_gain=0.25
+  Thời gian / vận tốc: cruise_speed=1.0, dt=0.05, max_time=240.0
+
+Chi tiết cấu hình từng đối tượng xem tham_so.json.

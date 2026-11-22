@@ -35,6 +35,7 @@ class Parameters:
     route: str = DEFAULT_ROUTE
     Ki: float = 0.0
     Kd: float = 0.0
+    goal_slowdown_gain: float = 0.25
 
     def validate(self):
         if self.route not in ROUTES:
@@ -63,3 +64,11 @@ MODE_LABELS = {
     'full': 'Goc vs moi (bat giam toc theo do cong)',
     'speed': 'Chi khao sat giam toc (cung d thuc)',
 }
+
+# Ba cấu hình điều khiển dùng chung hình học, quỹ đạo và điều kiện đầu.
+CONTROLLER_CONFIGS = {
+    'pp_p': {'label': 'Đối tượng 1 - PP + Kp', 'Kp': 1.2, 'Ki': 0.0, 'Kd': 0.0, 'curvature_speed': False},
+    'pp_pid': {'label': 'Đối tượng 2 - PP + PID', 'Kp': 1.2, 'Ki': 0.2, 'Kd': 0.05, 'curvature_speed': False},
+    'pp_pid_curve': {'label': 'Đối tượng 3 - PP + PID + giảm tốc cua', 'Kp': 1.2, 'Ki': 0.2, 'Kd': 0.05, 'curvature_speed': True},
+}
+EXPERIMENT_ROUTES = ('straight', 'elbow', 'zigzag')

@@ -1,0 +1,123 @@
+{
+  "route": "elbow",
+  "route_label": "Chữ L · 1 cua",
+  "controllers": {
+    "pp_p": {
+      "label": "Đối tượng 1 - PP + Kp",
+      "groups": {
+        "Hình học xe": {
+          "WB": 2.9,
+          "vehicle_width": 2.0,
+          "max_steer_deg": 45.0
+        },
+        "Môi trường": {
+          "corridor_width": 8.0,
+          "leg_length": 12.0,
+          "stop_on_collision": true
+        },
+        "Pure Pursuit": {
+          "Lfc": 2.5,
+          "k": 0.1
+        },
+        "Điều tốc P/PID": {
+          "Kp": 1.2,
+          "Ki": 0.0,
+          "Kd": 0.0,
+          "max_accel": 1.0,
+          "max_decel": 1.5
+        },
+        "Giảm tốc cua": {
+          "curvature_speed": false,
+          "regulation_radius": 8.0,
+          "min_speed": 0.5
+        },
+        "Giảm tốc về đích": {
+          "goal_slowdown_gain": 0.25
+        },
+        "Thời gian / vận tốc": {
+          "cruise_speed": 1.0,
+          "dt": 0.05,
+          "max_time": 240.0
+        }
+      }
+    },
+    "pp_pid": {
+      "label": "Đối tượng 2 - PP + PID",
+      "groups": {
+        "Hình học xe": {
+          "WB": 2.9,
+          "vehicle_width": 2.0,
+          "max_steer_deg": 45.0
+        },
+        "Môi trường": {
+          "corridor_width": 8.0,
+          "leg_length": 12.0,
+          "stop_on_collision": true
+        },
+        "Pure Pursuit": {
+          "Lfc": 2.5,
+          "k": 0.1
+        },
+        "Điều tốc P/PID": {
+          "Kp": 1.2,
+          "Ki": 0.2,
+          "Kd": 0.05,
+          "max_accel": 1.0,
+          "max_decel": 1.5
+        },
+        "Giảm tốc cua": {
+          "curvature_speed": false,
+          "regulation_radius": 8.0,
+          "min_speed": 0.5
+        },
+        "Giảm tốc về đích": {
+          "goal_slowdown_gain": 0.25
+        },
+        "Thời gian / vận tốc": {
+          "cruise_speed": 1.0,
+          "dt": 0.05,
+          "max_time": 240.0
+        }
+      }
+    },
+    "pp_pid_curve": {
+      "label": "Đối tượng 3 - PP + PID + giảm tốc cua",
+      "groups": {
+        "Hình học xe": {
+          "WB": 2.9,
+          "vehicle_width": 2.0,
+          "max_steer_deg": 45.0
+        },
+        "Môi trường": {
+          "corridor_width": 8.0,
+          "leg_length": 12.0,
+          "stop_on_collision": true
+        },
+        "Pure Pursuit": {
+          "Lfc": 2.5,
+          "k": 0.1
+        },
+        "Điều tốc P/PID": {
+          "Kp": 1.2,
+          "Ki": 0.2,
+          "Kd": 0.05,
+          "max_accel": 1.0,
+          "max_decel": 1.5
+        },
+        "Giảm tốc cua": {
+          "curvature_speed": true,
+          "regulation_radius": 8.0,
+          "min_speed": 0.5
+        },
+        "Giảm tốc về đích": {
+          "goal_slowdown_gain": 0.25
+        },
+        "Thời gian / vận tốc": {
+          "cruise_speed": 1.0,
+          "dt": 0.05,
+          "max_time": 240.0
+        }
+      }
+    }
+  }
+}
