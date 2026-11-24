@@ -1,4 +1,4 @@
-Scenario,Controller,Common-Domain Spatial RMS Error(s) [m],RMS(ds) [m],e_max [m],completion time [s],d_goal [m],v_end [m/s],Has collision (0/1),Finish State
+﻿Scenario,Controller,Common-Domain Spatial RMS Error(s) [m],RMS(ds) [m],e_max [m],completion time [s],d_goal [m],v_end [m/s],Has collision (0/1),Finish State
 straight,PP + Kp only,1.0011260147353045e-15,1.0098188650562132e-15,3.842071800431403e-15,31.850000000000318,0.09462419072648842,0.02934574870922671,0,"Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s"
 straight,PP + PID,1.0563136070536816e-15,1.0519618610244214e-15,3.841872618511245e-15,37.899999999999984,0.11944606056447427,0.01698724581108496,0,"Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s"
 straight,RPP + PID,1.0563136070536816e-15,1.0519618610244214e-15,3.841872618511245e-15,37.899999999999984,0.11944606056447427,0.01698724581108496,0,"Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s"
