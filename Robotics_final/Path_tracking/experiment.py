@@ -43,13 +43,13 @@ def common_alignment(sims, step=.05):
     lo = max(v[0][0] for v in progress.values())
     hi = min(v[0][-1] for v in progress.values())
     if hi-lo <= 1e-8:
-        return np.empty((0,1+3*4)), {}
+        return np.empty((0,1+len(sims)*4)), {}
     grid = np.linspace(lo,hi,max(2,int(math.ceil((hi-lo)/step))+1))
     result = [grid]
-    for k in LABELS:
+    for k in sims:
         s,data = progress[k]
         result.extend([np.interp(grid,s,data[:,idx]) for idx in (7,4,0,5)])
-    return np.column_stack(result), {k: (j*4+1) for j,k in enumerate(LABELS)}
+    return np.column_stack(result), {k: (j*4+1) for j,k in enumerate(sims)}
 
 def spatial_rms(s,e):
     if len(s)<2 or s[-1]-s[0]<=0: return float('nan')
@@ -57,16 +57,18 @@ def spatial_rms(s,e):
     integrate = np.trapezoid if hasattr(np, 'trapezoid') else np.trapz
     return math.sqrt(float(integrate(e*e,s)/(s[-1]-s[0])))
 
-def plot_route(sims,path,route):
+def plot_route(sims, path, route, *, styles=None, title=None):
     import matplotlib.pyplot as plt
     from trajectory import draw_map
     fig,ax=plt.subplots(figsize=(9,8),constrained_layout=True)
     first = next(iter(sims.values()))
-    draw_map(ax,first)
+    _, _, body, _, _ = draw_map(ax,first)
     # Remove placeholders for vehicle, so overlay focuses only on trajectories.
     for artist in list(ax.lines)[1:]:
         try: artist.remove()
         except ValueError: pass
+    if styles is not None:
+        body.remove()
     for key,sim in sims.items():
         data=np.asarray(sim.rows)
         ax.plot(data[:,1],data[:,2],lw=2.2,color=COLORS[key],label=LABELS[key])
@@ -515,11 +517,136 @@ def run_all_experiments(base=None, root='results', gifs=True):
     print('Hoàn tất. Kết quả:', root.resolve(), flush=True)
     return all_rows
 
+
+def create_lookahead_gif(sims, styles, filepath, frames=100):
+    """So sánh cả ba xe tại cùng thời điểm mô phỏng."""
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from PIL import Image
+    from types import SimpleNamespace
+    from trajectory import body_polygon, draw_map
+
+    fig, ax = plt.subplots(figsize=(9, 8), dpi=72, constrained_layout=True)
+    first = next(iter(sims.values()))
+    trail, target, body, wheels, heading = draw_map(ax, first)
+    for artist in (trail, target, body, *wheels, heading):
+        artist.remove()
+
+    runs = []
+    for key, sim in sims.items():
+        style = styles[key]
+        trace, = ax.plot([], [], lw=2.2, **style)
+        vehicle = plt.Polygon(
+            np.zeros((4, 2)), closed=True, edgecolor=style['color'],
+            facecolor=style['color'], alpha=0.35, zorder=6,
+        )
+        ax.add_patch(vehicle)
+        runs.append((sim, np.asarray(sim.rows), trace, vehicle))
+
+    ax.legend(loc='upper left', fontsize=8)
+    title = ax.set_title('')
+    canvas = FigureCanvasAgg(fig)
+    results = []
+    last_time = max(data[-1, 0] for _, data, _, _ in runs)
+    try:
+        for time in np.linspace(0.0, last_time, frames):
+            finished = []
+            for sim, data, trace, vehicle in runs:
+                # searchsorted giữ nguyên vị trí cuối của xe đã kết thúc.
+                index = np.searchsorted(data[:, 0], time, side='right') - 1
+                _, x, y, yaw, *_ = data[index]
+                trace.set_data(data[:index + 1, 1], data[:index + 1, 2])
+                vehicle.set_xy(body_polygon(SimpleNamespace(x=x, y=y, yaw=yaw), sim.p))
+                if index == len(data) - 1:
+                    reason = 'vượt biên' if sim.collided else (
+                        'đến đích' if sim.reason.startswith('Dat dich') else 'hết thời gian'
+                    )
+                    finished.append(f'{sim.p.Lfc:.1f} m: {reason}')
+            status = ' | '.join(finished) or 'Cả ba xe đang chạy'
+            title.set_text(f'Khảo sát Lfc trên tuyến zíc zắc · t = {time:.2f} s\n{status}')
+            canvas.draw()
+            results.append(Image.frombytes('RGBA', canvas.get_width_height(),
+                                          bytes(canvas.buffer_rgba())).convert('RGB'))
+        # Dùng chung bảng màu để các vùng nền tĩnh giữ nguyên giữa các khung.
+        width, height = results[0].size
+        palette_source = Image.new('RGB', (3 * width, 2 * height))
+        for i, index in enumerate(np.linspace(0, len(results) - 1, 6, dtype=int)):
+            palette_source.paste(results[index], ((i % 3) * width, (i // 3) * height))
+        palette = palette_source.quantize(colors=128)
+        gif_frames = [frame.quantize(palette=palette) for frame in results]
+        gif_frames[0].save(filepath, save_all=True, append_images=gif_frames[1:],
+                           duration=[110] * (len(gif_frames) - 1) + [1600],
+                           loop=0, optimize=True)
+    finally:
+        plt.close(fig)
+
+
+def run_lookahead_experiment(root='results', gifs=True):
+    """Khảo sát Lfc trên tuyến zíc zắc với cấu hình PP + PID cố định."""
+    from main import Simulation
+    from parameters import Parameters
+
+    route = 'zigzag'
+    folder = Path(root) / route
+    folder.mkdir(parents=True, exist_ok=True)
+    pid_options = {key: value for key, value in CONTROLLER_CONFIGS['pp_pid'].items()
+                   if key != 'label'}
+    base = Parameters(route=route, **pid_options)
+    sims, styles = {}, {}
+    for lfc, color, linestyle in [(1.5, '#2563eb', '-'),
+                                  (2.5, '#ea580c', '--'),
+                                  (4.0, '#16a34a', '-.')]:
+        key = f'lfc_{lfc:.1f}'.replace('.', '_')
+        print(f'Đang chạy zíc zắc với Lfc = {lfc:.1f} m', flush=True)
+        sim = Simulation(replace(base, Lfc=lfc), controller='modified')
+        while not sim.reason:
+            sim.step()
+        sims[key] = sim
+        styles[key] = {'color': color, 'linestyle': linestyle, 'label': f'Lfc = {lfc:.1f} m'}
+        write_csv(folder / f'{key}.csv', CSV_HEADER, sim.rows)
+
+    aligned, indices = common_alignment(sims)
+    summary = []
+    for key, sim in sims.items():
+        m = sim.metrics()
+        common_rms = spatial_rms(aligned[:, 0], aligned[:, indices[key]]) if len(aligned) else ''
+        reached_goal = sim.reason.startswith('Dat dich')
+        summary.append([
+            sim.p.Lfc, sim.p.k, m['rms'], m['rms_distance'], common_rms, m['max_error'],
+            m['duration'], m['duration'] if reached_goal else '', m['goal_distance'],
+            m['final_speed'], int(sim.collided), sim.reason,
+        ])
+    write_csv(folder / 'tong_hop_3_muc_lfc.csv', [
+        'Lfc [m]', 'k [s]', 'RMS(t) [m]', 'RMS(ds) [m]', 'RMS(s) miền chung [m]',
+        'e_max [m]', 'Thời gian chạy [s]', 'Thời gian đến đích [s]',
+        'Khoảng cách đích [m]', 'Vận tốc cuối [m/s]', 'Vượt biên (0/1)', 'Trạng thái kết thúc',
+    ], summary)
+    settings = {
+        'controller': 'PP + PID; góc lái dùng khoảng cách thực d',
+        'runs': {key: asdict(sim.p) for key, sim in sims.items()},
+        'common_s_m': [float(aligned[0, 0]), float(aligned[-1, 0])] if len(aligned) else None,
+    }
+    (folder / 'tham_so_lfc.json').write_text(
+        json.dumps(settings, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
+    plot_route(sims, folder / '04_quy_dao_3_muc_lfc.png', route, styles=styles,
+               title='Quỹ đạo thực tế với ba mức Lfc – tuyến zíc zắc')
+    if gifs:
+        create_lookahead_gif(sims, styles, folder / 'so_sanh_3_muc_lfc.gif')
+    print('Hoàn tất khảo sát Lfc:', folder.resolve(), flush=True)
+
+
 if __name__=='__main__':
     import argparse
+    import matplotlib
     from parameters import Parameters
+    matplotlib.use('Agg')
     ap=argparse.ArgumentParser()
     ap.add_argument('--no-gif',action='store_true',help='Bỏ GIF để kiểm thử nhanh')
     ap.add_argument('--output',default='results')
+    ap.add_argument('--lookahead', action='store_true', help='Khảo sát 3 mức Lfc trên tuyến zíc zắc')
     args=ap.parse_args()
-    run_all_experiments(Parameters(),args.output,gifs=not args.no_gif)
+    if args.lookahead:
+        run_lookahead_experiment(args.output, gifs=not args.no_gif)
+    else:
+        run_all_experiments(Parameters(),args.output,gifs=not args.no_gif)
