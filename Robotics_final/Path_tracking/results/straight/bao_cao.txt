@@ -1,34 +1,34 @@
-﻿BÁO CÁO KỊCH BẢN: Đường thẳng
+﻿BÁO CÁO KỊCH BẢN: Straight Path
 
 Quy ước: 3 đối tượng có cùng quỹ đạo, pose đầu, hình học, giới hạn và công thức lái dùng khoảng cách thực d.
-RMS(t): trung bình mẫu theo thời gian; RMS(ds): RMS tích phân theo quãng đường xe thực đi;
-RMS(s): RMS nội suy tại các mốc tiến độ tham chiếu chung, KHÔNG phải RMS(ds).
+Common-Domain Spatial RMS Error(s): RMS nội suy tại các mốc tiến độ tham chiếu chung;
+RMS(ds): RMS tích phân theo quãng đường thực tế xe lăn bánh.
 Nếu xe dừng sớm, phải xem miền s chung trước khi kết luận.
 
-Đối tượng 1 - PP + Kp:
-  RMS(t)=0.00000 m | RMS(ds)=0.00000 m | e_max=0.00000 m
-  Thời gian=31.85 s | Khoảng cách đích=0.0946 m | v cuối=0.0293 m/s
-  RMS(s) trên miền chung=0.00000 m | Vượt biên=False | Dat dich: cach <= 0.12 m, v <= 0.03 m/s
+PP + Kp only:
+  Common-Domain RMS(s)=0.00000 m | RMS(ds)=0.00000 m | e_max=0.00000 m
+  completion time=31.85 s | d_goal=0.0946 m | v_end=0.0293 m/s
+  Has collision=False | Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s
 
-Đối tượng 2 - PP + PID:
-  RMS(t)=0.00000 m | RMS(ds)=0.00000 m | e_max=0.00000 m
-  Thời gian=37.90 s | Khoảng cách đích=0.1194 m | v cuối=0.0170 m/s
-  RMS(s) trên miền chung=0.00000 m | Vượt biên=False | Dat dich: cach <= 0.12 m, v <= 0.03 m/s
+PP + PID:
+  Common-Domain RMS(s)=0.00000 m | RMS(ds)=0.00000 m | e_max=0.00000 m
+  completion time=37.90 s | d_goal=0.1194 m | v_end=0.0170 m/s
+  Has collision=False | Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s
 
-Đối tượng 3 - PP + PID + giảm tốc cua:
-  RMS(t)=0.00000 m | RMS(ds)=0.00000 m | e_max=0.00000 m
-  Thời gian=37.90 s | Khoảng cách đích=0.1194 m | v cuối=0.0170 m/s
-  RMS(s) trên miền chung=0.00000 m | Vượt biên=False | Dat dich: cach <= 0.12 m, v <= 0.03 m/s
+RPP + PID:
+  Common-Domain RMS(s)=0.00000 m | RMS(ds)=0.00000 m | e_max=0.00000 m
+  completion time=37.90 s | d_goal=0.1194 m | v_end=0.0170 m/s
+  Has collision=False | Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s
 
 Miền s chung: 0.000–23.881 m
 
 Các nhóm tham số:
-  Hình học xe: WB=2.9, vehicle_width=2.0, max_steer_deg=45.0
-  Môi trường: corridor_width=8.0, leg_length=12.0, stop_on_collision=True
+  Vehicle Geometry: WB=2.9, vehicle_width=2.0, max_steer_deg=45.0
+  Environment: corridor_width=8.0, leg_length=12.0, stop_on_collision=True
   Pure Pursuit: Lfc=2.5, k=0.1
-  Điều tốc P/PID: max_accel=1.0, max_decel=1.5
-  Giảm tốc cua: regulation_radius=8.0, min_speed=0.5
-  Giảm tốc về đích: goal_slowdown_gain=0.25
-  Thời gian / vận tốc: cruise_speed=1.0, dt=0.05, max_time=240.0
+  P/PID controller: max_accel=1.0, max_decel=1.5
+  Slow down while turing: regulation_radius=8.0, min_speed=0.5
+  Slow down when reaching goal: goal_slowdown_gain=0.25
+  completion time / Velocity: cruise_speed=1.0, dt=0.05, max_time=240.0
 
 Chi tiết cấu hình từng đối tượng xem tham_so.json.

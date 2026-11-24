@@ -161,7 +161,7 @@ def draw_map(ax, sim):
         ax.add_patch(Rectangle((a,c),b-a,d-c,facecolor='#e9eef3',edgecolor='none'))
     ax.add_collection(LineCollection(sim.corridor.walls,colors='#334155',linewidths=1.8))
     line = sim.course.path
-    ax.plot(line[:,0],line[:,1],'--',color='#e34a33',lw=1.4,label='Tuyen tham chieu')
+    ax.plot(line[:,0],line[:,1],'--',color='#e34a33',lw=1.4,label='Reference Path')
     ax.scatter(*sim.vertices[0],c='#16a34a',s=45,zorder=5)
     ax.scatter(*sim.vertices[-1],c='#e34a33',s=65,marker='s',zorder=5)
     ax.text(*sim.vertices[0], '  A',fontsize=10)
@@ -226,7 +226,7 @@ def sample_plot_figure(sim,title,time_limit,error_limit,color):
     note = (f'{sim.reason} | Giam toc cua: {sim.p.curvature_speed} | '
             f'Vuot bien: {sim.collided}\n'
             f'RMS(t)={m["rms"]:.4f} m | RMS(ds)={m["rms_distance"]:.4f} m | '
-            f'e_max={m["max_error"]:.4f} m | t={m["duration"]:.2f} s\n'
+            f'e_max={m["max_error"]:.4f} m | t={m["completion time"]:.2f} s\n'
             f'd_dich={m["goal_distance"]:.3f} m | v_cuoi={m["final_speed"]:.3f} m/s')
     fig.suptitle(note,fontsize=10)
     return fig

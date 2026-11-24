@@ -5,10 +5,10 @@ import math
 
 DEFAULT_ROUTE = 'zigzag'
 ROUTES = {
-    'straight': ('Đường thẳng', ((0, 0), (0, 1), (0, 2))),
-    'elbow': ('Chữ L · 1 cua', ((0, 0), (0, 1), (1, 1))),
+    'straight': ('Straight Path', ((0, 0), (0, 1), (0, 2))),
+    'elbow': ('L-shaped Path', ((0, 0), (0, 1), (1, 1))),
     'stairs': ('Bậc thang · 3 cua', ((0, 0), (0, 1), (1, 1), (1, 2), (2, 2))),
-    'zigzag': ('Zíc zắc · 5 cua', ((0, 0), (0, 1), (1, 1), (1, 2),
+    'zigzag': ('Zig-Zag Path', ((0, 0), (0, 1), (1, 1), (1, 2),
                                  (0, 2), (0, 3), (1, 3))),
 }
 
@@ -67,8 +67,8 @@ MODE_LABELS = {
 
 # Ba cấu hình điều khiển dùng chung hình học, quỹ đạo và điều kiện đầu.
 CONTROLLER_CONFIGS = {
-    'pp_p': {'label': 'Đối tượng 1 - PP + Kp', 'Kp': 1.2, 'Ki': 0.0, 'Kd': 0.0, 'curvature_speed': False},
-    'pp_pid': {'label': 'Đối tượng 2 - PP + PID', 'Kp': 1.2, 'Ki': 0.2, 'Kd': 0.05, 'curvature_speed': False},
-    'pp_pid_curve': {'label': 'Đối tượng 3 - PP + PID + giảm tốc cua', 'Kp': 1.2, 'Ki': 0.2, 'Kd': 0.05, 'curvature_speed': True},
+    'pp_p': {'label': 'PP + Kp only', 'Kp': 1.2, 'Ki': 0.0, 'Kd': 0.0, 'curvature_speed': False},
+    'pp_pid': {'label': 'PP + PID', 'Kp': 1.2, 'Ki': 0.2, 'Kd': 0.05, 'curvature_speed': False},
+    'pp_pid_curve': {'label': 'RPP + PID', 'Kp': 1.2, 'Ki': 0.2, 'Kd': 0.05, 'curvature_speed': True},
 }
 EXPERIMENT_ROUTES = ('straight', 'elbow', 'zigzag')

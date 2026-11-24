@@ -1,16 +1,16 @@
 {
   "route": "straight",
-  "route_label": "Đường thẳng",
+  "route_label": "Straight Path",
   "controllers": {
     "pp_p": {
-      "label": "Đối tượng 1 - PP + Kp",
+      "label": "PP + Kp only",
       "groups": {
-        "Hình học xe": {
+        "Vehicle Geometry": {
           "WB": 2.9,
           "vehicle_width": 2.0,
           "max_steer_deg": 45.0
         },
-        "Môi trường": {
+        "Environment": {
           "corridor_width": 8.0,
           "leg_length": 12.0,
           "stop_on_collision": true
@@ -19,22 +19,22 @@
           "Lfc": 2.5,
           "k": 0.1
         },
-        "Điều tốc P/PID": {
+        "P/PID controller": {
           "Kp": 1.2,
           "Ki": 0.0,
           "Kd": 0.0,
           "max_accel": 1.0,
           "max_decel": 1.5
         },
-        "Giảm tốc cua": {
+        "Slow down while turing": {
           "curvature_speed": false,
           "regulation_radius": 8.0,
           "min_speed": 0.5
         },
-        "Giảm tốc về đích": {
+        "Slow down when reaching goal": {
           "goal_slowdown_gain": 0.25
         },
-        "Thời gian / vận tốc": {
+        "completion time / Velocity": {
           "cruise_speed": 1.0,
           "dt": 0.05,
           "max_time": 240.0
@@ -42,14 +42,14 @@
       }
     },
     "pp_pid": {
-      "label": "Đối tượng 2 - PP + PID",
+      "label": "PP + PID",
       "groups": {
-        "Hình học xe": {
+        "Vehicle Geometry": {
           "WB": 2.9,
           "vehicle_width": 2.0,
           "max_steer_deg": 45.0
         },
-        "Môi trường": {
+        "Environment": {
           "corridor_width": 8.0,
           "leg_length": 12.0,
           "stop_on_collision": true
@@ -58,22 +58,22 @@
           "Lfc": 2.5,
           "k": 0.1
         },
-        "Điều tốc P/PID": {
+        "P/PID controller": {
           "Kp": 1.2,
           "Ki": 0.2,
           "Kd": 0.05,
           "max_accel": 1.0,
           "max_decel": 1.5
         },
-        "Giảm tốc cua": {
+        "Slow down while turing": {
           "curvature_speed": false,
           "regulation_radius": 8.0,
           "min_speed": 0.5
         },
-        "Giảm tốc về đích": {
+        "Slow down when reaching goal": {
           "goal_slowdown_gain": 0.25
         },
-        "Thời gian / vận tốc": {
+        "completion time / Velocity": {
           "cruise_speed": 1.0,
           "dt": 0.05,
           "max_time": 240.0
@@ -81,14 +81,14 @@
       }
     },
     "pp_pid_curve": {
-      "label": "Đối tượng 3 - PP + PID + giảm tốc cua",
+      "label": "RPP + PID",
       "groups": {
-        "Hình học xe": {
+        "Vehicle Geometry": {
           "WB": 2.9,
           "vehicle_width": 2.0,
           "max_steer_deg": 45.0
         },
-        "Môi trường": {
+        "Environment": {
           "corridor_width": 8.0,
           "leg_length": 12.0,
           "stop_on_collision": true
@@ -97,22 +97,22 @@
           "Lfc": 2.5,
           "k": 0.1
         },
-        "Điều tốc P/PID": {
+        "P/PID controller": {
           "Kp": 1.2,
           "Ki": 0.2,
           "Kd": 0.05,
           "max_accel": 1.0,
           "max_decel": 1.5
         },
-        "Giảm tốc cua": {
+        "Slow down while turing": {
           "curvature_speed": true,
           "regulation_radius": 8.0,
           "min_speed": 0.5
         },
-        "Giảm tốc về đích": {
+        "Slow down when reaching goal": {
           "goal_slowdown_gain": 0.25
         },
-        "Thời gian / vận tốc": {
+        "completion time / Velocity": {
           "cruise_speed": 1.0,
           "dt": 0.05,
           "max_time": 240.0

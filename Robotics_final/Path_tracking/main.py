@@ -116,11 +116,11 @@ class Simulation:
         self.record()
         final_distance = self.rows[-1][-1]
         if self.rows[-1][8] and p.stop_on_collision:
-            self.reason = 'Dung: than xe vuot bien hanh lang'
+            self.reason = 'Stop: Collision happened'
         elif final_distance <= 0.12 and s.v <= 0.03:
-            self.reason = 'Dat dich: cach <= 0.12 m, v <= 0.03 m/s'
+            self.reason = 'Goal Reached: d_goal <= 0.12 m, v <= 0.03 m/s'
         elif self.t >= p.max_time:
-            self.reason = 'Het thoi gian: chua dat dich'
+            self.reason = 'Time out:  Goal not reached'
 
     def metrics(self):
         data = np.asarray(self.rows)
@@ -129,7 +129,7 @@ class Simulation:
         # Tich phan hinh thang cua e^2 theo quang duong da di.
         spatial = math.sqrt(float(np.sum((errors[:-1]**2+errors[1:]**2)/2*ds)/ds.sum())) if ds.sum()>0 else 0.0
         return dict(rms=math.sqrt(float(np.mean(errors**2))), rms_distance=spatial,
-                    max_error=float(errors.max()), duration=self.t,
+                    max_error=float(errors.max()), completion_time=self.t,
                     final_speed=self.state.v, goal_distance=float(data[-1,-1]))
 
 
@@ -150,7 +150,7 @@ def make_pair(p,mode='current'):
 def comparison_report(baseline,new,mode,aligned):
     m0,m1 = baseline.metrics(),new.metrics()
     labels = [('rms','RMS theo thoi gian [m]'),('rms_distance','RMS theo quang duong xe [m]'),
-              ('max_error','Sai so lon nhat [m]'),('duration','Thoi gian dung mo phong [s]'),
+              ('max_error','Sai so lon nhat [m]'),('completion_time','Thoi gian dung mo phong [s]'),
               ('goal_distance','Khoang cach dich [m]'),('final_speed','Van toc cuoi [m/s]')]
     lines = [MODE_LABELS[mode], '',
              'QUY UOC DOI CHUNG',
@@ -408,7 +408,7 @@ class App:
         hit = 'CO' if self.sim.collided else 'chua'
         status = self.sim.reason or ('Dang chay' if self.running else 'San sang / tam dung')
         self.status.set(f'{status}\nGiam toc cua: {self.sim.p.curvature_speed}\n'
-                        f't = {m["duration"]:.2f} s | v = {m["final_speed"]:.3f} m/s\n'
+                        f't = {m["completion_time"]:.2f} s | v = {m["final_speed"]:.3f} m/s\n'
                         f'RMS thoi gian: {m["rms"]:.4f} m\nRMS quang duong: {m["rms_distance"]:.4f} m\n'
                         f'Sai so max: {m["max_error"]:.4f} m\nCach dich: {m["goal_distance"]:.3f} m\n'
                         f'Da vuot bien: {hit}')
@@ -538,7 +538,7 @@ def self_test(preview=None):
         sim = Simulation(p)
         assert not sim.rows[0][8], 'Xe khoi tao ngoai hanh lang'
         while not sim.reason: sim.step()
-        assert 'Dat dich' in sim.reason, sim.reason
+        assert 'Goal Reached' in sim.reason, sim.reason
         assert sim.metrics()['goal_distance'] <= .12
         assert sim.state.v <= .03
         assert abs(sim.delta) <= math.radians(p.max_steer_deg)+1e-10
@@ -593,7 +593,7 @@ def comparison_self_test():
         pair = make_pair(p,mode)
         for sim in pair:
             while not sim.reason: sim.step()
-            assert 'Dat dich' in sim.reason, (mode,sim.reason)
+            assert 'Goal Reached' in sim.reason, (mode,sim.reason)
             assert not sim.collided
         print('PASS comparison',mode,[sim.metrics() for sim in pair])
 
